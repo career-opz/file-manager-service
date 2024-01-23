@@ -31,5 +31,10 @@ public class FileServiceImpl implements FileService {
     public FileContentDto downloadFile(String fileId) throws IOException {
         return storageService.download(fileId);
     }
+
+    @Override
+    public void deleteFile(String fileId) throws IOException {
+        storageService.delete(fileId);
+    }
 }
 

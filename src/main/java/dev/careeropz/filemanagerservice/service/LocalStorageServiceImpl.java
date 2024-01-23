@@ -17,7 +17,7 @@ import java.nio.file.StandardCopyOption;
 @RequiredArgsConstructor
 public class LocalStorageServiceImpl implements StorageService {
 
-    private FileMetadataRepository fileMetadataRepository;
+    private final FileMetadataRepository fileMetadataRepository;
 
     @Value("${file.storage.local.directory}")
     private String localDirectory;
@@ -25,7 +25,7 @@ public class LocalStorageServiceImpl implements StorageService {
     @Override
     public String upload(MultipartFile file) throws IOException {
         String fileId = generateFileId();
-        Path destinationPath = Path.of(localDirectory, fileId);
+        Path destinationPath = Path.of(localDirectory, fileId + "-" + file.getOriginalFilename());
         Files.copy(file.getInputStream(), destinationPath, StandardCopyOption.REPLACE_EXISTING);
 
         FileMetadataModel metadataEntity = new FileMetadataModel(fileId, file.getOriginalFilename(), destinationPath.toString());
@@ -52,6 +52,15 @@ public class LocalStorageServiceImpl implements StorageService {
             return new FileContentDto(metadataEntity.getFileName(), fileBytes);
         } else {
             return null;
+        }
+    }
+
+    @Override
+    public void delete(String fileId) throws IOException {
+        FileMetadataModel metadataEntity = fileMetadataRepository.findByFileId(fileId);
+        if (metadataEntity != null) {
+            Files.delete(Path.of(metadataEntity.getLocation()));
+            fileMetadataRepository.delete(metadataEntity);
         }
     }
 

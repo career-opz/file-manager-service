@@ -12,4 +12,6 @@ public interface FileService {
     FileMetadataModel getFileMetadata(String fileId);
 
     FileContentDto downloadFile(String fileId) throws IOException;
+
+    void deleteFile(String fileId) throws IOException;
 }

@@ -4,7 +4,7 @@ import dev.careeropz.filemanagerservice.dto.FileContentDto;
 import dev.careeropz.filemanagerservice.exception.ResourceNotFoundException;
 import dev.careeropz.filemanagerservice.model.FileMetadataModel;
 import dev.careeropz.filemanagerservice.service.FileService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,12 +13,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/file/api/v1/file-manager")
+@RequestMapping("/file-manager/api/v1/file")
+@RequiredArgsConstructor
 public class FileController {
-    @Autowired
-    private FileService fileService;
 
-    @PostMapping("/upload")
+    private final FileService fileService;
+
+    @PostMapping()
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
             String fileId = fileService.uploadFile(file);
@@ -29,7 +30,7 @@ public class FileController {
         }
     }
 
-    @GetMapping("/metadata/{fileId}")
+    @GetMapping("/{fileId}/metadata")
     public ResponseEntity<FileMetadataModel> getFileMetadata(@PathVariable String fileId) {
         FileMetadataModel metadata = fileService.getFileMetadata(fileId);
         if (metadata != null) {
@@ -39,7 +40,7 @@ public class FileController {
         }
     }
 
-    @GetMapping("/download/{fileId}")
+    @GetMapping("/{fileId}")
     public ResponseEntity<byte[]> downloadFile(@PathVariable String fileId) {
         try {
             FileContentDto fileContent = fileService.downloadFile(fileId);
@@ -48,6 +49,17 @@ public class FileController {
                     .body(fileContent.getFileBytes());
         } catch (IOException e) {
             throw new ResourceNotFoundException("File not found with ID: " + fileId);
+        }
+    }
+
+    @DeleteMapping("/{fileId}")
+    public ResponseEntity<String> deleteFile(@PathVariable String fileId) {
+        try {
+            fileService.deleteFile(fileId);
+            return ResponseEntity.ok("File deleted successfully");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting the file: " + e.getMessage());
         }
     }
 }

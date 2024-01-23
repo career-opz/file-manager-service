@@ -1,0 +1,19 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://career-opz-admin:BFmy7vGno3iuj59a@cluster0.56yjiim.mongodb.net/?retryWrites=true&w=majority
+      database: Cluster0
+  servlet:
+    multipart:
+      max-file-size: 3MB
+      max-request-size: 3MB
+
+file:
+  storage:
+    type: 'local'
+    local:
+      directory: "C:\\Users\\isuru\\Desktop\\file_server\\"
+
+
+server:
+  port: 9093

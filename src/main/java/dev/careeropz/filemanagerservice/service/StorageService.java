@@ -14,4 +14,6 @@ public interface StorageService {
 
     FileContentDto download(String fileId) throws IOException;
 
+    void delete(String fileId) throws IOException;
+
 }
