@@ -1,6 +1,8 @@
 package dev.careeropz.filemanagerservice.controller;
 
+import dev.careeropz.commons.fileservice.dto.responseto.FileUploadResponseDto;
 import dev.careeropz.filemanagerservice.dto.FileContentDto;
+import dev.careeropz.commons.fileservice.dto.requestdto.FileUploadRequestDto;
 import dev.careeropz.filemanagerservice.exception.ResourceNotFoundException;
 import dev.careeropz.filemanagerservice.model.FileMetadataModel;
 import dev.careeropz.filemanagerservice.service.FileService;
@@ -8,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -20,14 +21,9 @@ public class FileController {
     private final FileService fileService;
 
     @PostMapping()
-    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
-        try {
-            String fileId = fileService.uploadFile(file);
-            return ResponseEntity.ok("File uploaded successfully. File ID: " + fileId);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error uploading the file: " + e.getMessage());
-        }
+    public ResponseEntity<FileUploadResponseDto> uploadFile(@ModelAttribute FileUploadRequestDto fileUploadRequestDto) throws IOException {
+        FileUploadResponseDto fileUploadResponse = fileService.uploadFile(fileUploadRequestDto);
+        return ResponseEntity.ok(fileUploadResponse);
     }
 
     @GetMapping("/{fileId}/metadata")

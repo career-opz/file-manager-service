@@ -1,6 +1,8 @@
 package dev.careeropz.filemanagerservice.service;
 
 
+import dev.careeropz.commons.fileservice.dto.requestdto.FileUploadRequestDto;
+import dev.careeropz.commons.fileservice.dto.responseto.FileUploadResponseDto;
 import dev.careeropz.filemanagerservice.dto.FileContentDto;
 import dev.careeropz.filemanagerservice.model.FileMetadataModel;
 import org.springframework.stereotype.Service;
@@ -18,8 +20,8 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public String uploadFile(MultipartFile file) throws IOException {
-        return storageService.upload(file);
+    public FileUploadResponseDto uploadFile(FileUploadRequestDto fileUploadRequestDto) throws IOException {
+        return storageService.upload(fileUploadRequestDto);
     }
 
     @Override
