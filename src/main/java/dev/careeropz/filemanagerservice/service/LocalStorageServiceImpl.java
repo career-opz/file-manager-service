@@ -6,30 +6,30 @@ import dev.careeropz.commons.fileservice.dto.responseto.FileUploadResponseDto;
 import dev.careeropz.filemanagerservice.dto.FileContentDto;
 import dev.careeropz.filemanagerservice.model.FileMetadataModel;
 import dev.careeropz.filemanagerservice.repository.FileMetadataRepository;
-import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Service
 public class LocalStorageServiceImpl implements StorageService {
 
     private final FileMetadataRepository fileMetadataRepository;
     private final ModelMapper modelMapper;
+    @Value("${file.storage.local.directory}")
+    private String localDirectory;
 
     public LocalStorageServiceImpl(FileMetadataRepository fileMetadataRepository) {
         this.fileMetadataRepository = fileMetadataRepository;
         this.modelMapper = new ModelMapper();
     }
-
-    @Value("${file.storage.local.directory}")
-    private String localDirectory;
 
     private static String getFileSaveFolder(FileType fileType) {
         return switch (fileType) {
@@ -43,16 +43,29 @@ public class LocalStorageServiceImpl implements StorageService {
     @Override
     public FileUploadResponseDto upload(FileUploadRequestDto fileUploadRequestDto) throws IOException {
         String fileId = generateFileId();
-        Path fileSaveLocation = getFileSaveLocation(fileUploadRequestDto.getFileType(), fileId, fileUploadRequestDto.getFile().getOriginalFilename());
-        Files.copy(fileUploadRequestDto.getFile().getInputStream(), fileSaveLocation, StandardCopyOption.REPLACE_EXISTING);
+        Path fileSaveLocation = getFileSaveLocation(fileUploadRequestDto.getFileType(), fileId, fileUploadRequestDto.getFileName());
+
+        FileOutputStream fileOutputStream = null;
+        try {
+            File file = new File(fileSaveLocation.toString());
+            fileOutputStream = new FileOutputStream(file);
+            fileOutputStream.write(fileUploadRequestDto.getFile());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fileOutputStream != null) {
+                fileOutputStream.close();
+            }
+        }
 
         FileMetadataModel metadataEntity = FileMetadataModel.builder()
                 .fileId(fileId)
                 .userId(fileUploadRequestDto.getUserId())
-                .fileName(fileUploadRequestDto.getFile().getOriginalFilename())
+                .fileName(fileUploadRequestDto.getFileName())
                 .fileType(fileUploadRequestDto.getFileType())
                 .location(fileSaveLocation.toString())
-                .uploadedOn(LocalDateTime.now())
+                .uploadedOn(new Date())
                 .build();
         return modelMapper.map(fileMetadataRepository.save(metadataEntity), FileUploadResponseDto.class);
     }
